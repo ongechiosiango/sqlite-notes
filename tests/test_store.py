@@ -3,7 +3,7 @@
 import pytest
 
 from sqlite_notes.db import migrate, open_db
-from sqlite_notes.store import StoreError, add_note, get_note, list_notes
+from sqlite_notes.store import StoreError, add_note, delete_note, get_note, list_notes
 
 
 @pytest.fixture
@@ -48,3 +48,15 @@ def test_list_notes_empty(conn):
 def test_get_note_missing_raises(conn):
     with pytest.raises(StoreError, match="not found"):
         get_note(conn, 999)
+
+
+def test_delete_note_removes_it(conn):
+    note = add_note(conn, "to delete")
+    delete_note(conn, note.id)
+    with pytest.raises(StoreError, match="not found"):
+        get_note(conn, note.id)
+
+
+def test_delete_missing_raises(conn):
+    with pytest.raises(StoreError, match="not found"):
+        delete_note(conn, 999)

@@ -3,18 +3,26 @@
 from __future__ import annotations
 
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 
 console = Console()
 
 
 def print_note(note, action: str = "Saved") -> None:
-    """Print a single note confirmation."""
     console.print(f"[green]{action}[/green] note [bold]#{note.id}[/bold]: {note.body}")
 
 
+def print_deleted(note_id: int) -> None:
+    console.print(f"[green]Deleted[/green] note [bold]#{note_id}[/bold].")
+
+
+def print_single_note(note) -> None:
+    body = f"[bold cyan]#{note.id}[/bold cyan]  [dim]{note.created_at}[/dim]\n\n{note.body}"
+    console.print(Panel(body, title="Note", border_style="cyan"))
+
+
 def print_notes(notes) -> None:
-    """Print a table of notes."""
     if not notes:
         console.print('[yellow]No notes yet.[/yellow] Add one with: notes add "..."')
         return

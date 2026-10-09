@@ -8,8 +8,8 @@ from rich.console import Console
 
 from . import __version__
 from .db import default_db_path, migrate, open_db
-from .reporter import print_note, print_notes
-from .store import StoreError, add_note, list_notes
+from .reporter import print_deleted, print_note, print_notes, print_single_note
+from .store import StoreError, add_note, delete_note, get_note, list_notes
 
 console = Console()
 
@@ -32,6 +32,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("list", help="List all notes, newest first.")
 
+    show_p = sub.add_parser("show", help="Show a single note by ID.")
+    show_p.add_argument("id", type=int, help="Note ID.")
+
+    delete_p = sub.add_parser("delete", help="Delete a note by ID.")
+    delete_p.add_argument("id", type=int, help="Note ID.")
+
     return parser
 
 
@@ -53,6 +59,24 @@ def main() -> int:
 
         if args.cmd == "list":
             print_notes(list_notes(conn))
+            return 0
+
+        if args.cmd == "show":
+            try:
+                note = get_note(conn, args.id)
+            except StoreError as exc:
+                console.print(f"[bold red]Error:[/bold red] {exc}")
+                return 1
+            print_single_note(note)
+            return 0
+
+        if args.cmd == "delete":
+            try:
+                delete_note(conn, args.id)
+            except StoreError as exc:
+                console.print(f"[bold red]Error:[/bold red] {exc}")
+                return 1
+            print_deleted(args.id)
             return 0
     finally:
         conn.close()
